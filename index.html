@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESG Performance Analysis — Krithika Das</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy: #0d1f3c;
+  --navy-2: #1a3260;
+  --gold: #b8922a;
+  --gold-light: #d4a843;
+  --cream: #f5f0e8;
+  --cream-2: #ede7d9;
+  --cream-3: #e4dccb;
+  --text: #1a1a2e;
+  --gray: #6b7280;
+  --gray-2: #9ca3af;
+  --green: #14532d;
+  --green-light: #dcfce7;
+  --red: #7f1d1d;
+  --red-light: #fee2e2;
+  --white: #ffffff;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* ── GRAIN OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.4;
+}
+
+/* ── MASTHEAD ── */
+.masthead {
+  background: var(--navy);
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.masthead::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
+}
+
+.masthead-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 3.5rem 2.5rem 3rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2rem;
+  align-items: end;
+}
+
+.masthead-kicker {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.8rem;
+  animation: fadeUp 0.6s ease both;
+}
+
+.masthead h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+
+.masthead h1 em {
+  font-style: italic;
+  color: var(--gold-light);
+}
+
+.masthead-sub {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.55);
+  margin-top: 0.8rem;
+  line-height: 1.6;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+
+.masthead-meta {
+  text-align: right;
+  animation: fadeUp 0.6s 0.15s ease both;
+}
+
+.masthead-meta .author {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  color: var(--white);
+  font-weight: 600;
+}
+
+.masthead-meta .role {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.45);
+  margin-top: 0.2rem;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.05em;
+}
+
+.masthead-meta .date {
+  font-size: 0.68rem;
+  color: var(--gold);
+  margin-top: 0.5rem;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ── NAV STRIP ── */
+.nav-strip {
+  background: var(--cream-2);
+  border-bottom: 1px solid var(--cream-3);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-strip-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 2.5rem;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+}
+
+.nav-link {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gray);
+  text-decoration: none;
+  padding: 0.85rem 1.2rem;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.nav-link:hover { color: var(--navy); border-bottom-color: var(--gold); }
+
+/* ── MAIN LAYOUT ── */
+.main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 3rem 2.5rem 5rem;
+}
+
+/* ── SECTION HEADERS ── */
+.section-marker {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.8rem;
+  margin-top: 3.5rem;
+}
+
+.section-marker:first-child { margin-top: 0; }
+
+.section-number {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  background: var(--navy);
+  padding: 0.25rem 0.6rem;
+  flex-shrink: 0;
+}
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: -0.01em;
+}
+
+.section-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--cream-3);
+}
+
+/* ── VERDICT BOX ── */
+.verdict {
+  background: var(--navy);
+  padding: 2.2rem 2.5rem;
+  margin-bottom: 2.5rem;
+  position: relative;
+  overflow: hidden;
+  animation: fadeUp 0.7s 0.3s ease both;
+}
+
+.verdict::before {
+  content: '"';
+  position: absolute;
+  top: -1rem; left: 1.5rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 8rem;
+  color: rgba(255,255,255,0.04);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.verdict-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.8rem;
+}
+
+.verdict-text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  font-style: normal;
+  font-weight: 300;
+  color: var(--white);
+  line-height: 1.75;
+}
+
+.verdict-text strong {
+  font-style: normal;
+  color: var(--gold-light);
+}
+
+/* ── STAT CARDS ── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1px;
+  background: var(--cream-3);
+  border: 1px solid var(--cream-3);
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--white);
+  padding: 1.5rem 1.8rem;
+  position: relative;
+  transition: transform 0.2s;
+}
+
+.stat-card:hover { transform: translateY(-2px); z-index: 2; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+
+.stat-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gray-2);
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--navy);
+  margin-bottom: 0.3rem;
+}
+
+.stat-value.up { color: var(--green); }
+.stat-value.down { color: var(--red); }
+.stat-value.neutral { color: var(--navy-2); }
+
+.stat-sub {
+  font-size: 0.72rem;
+  color: var(--gray);
+  line-height: 1.4;
+}
+
+.stat-badge {
+  position: absolute;
+  top: 1rem; right: 1rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  padding: 0.2rem 0.5rem;
+  text-transform: uppercase;
+}
+
+.badge-esg { background: var(--navy); color: var(--cream); }
+.badge-nonesg { background: var(--gold); color: var(--navy); }
+.badge-both { background: var(--cream-3); color: var(--gray); }
+
+/* ── COMPARISON TABLE ── */
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--white);
+  border: 1px solid var(--cream-3);
+  margin-bottom: 2rem;
+  font-size: 0.875rem;
+}
+
+.compare-table thead tr {
+  background: var(--navy);
+}
+
+.compare-table thead th {
+  padding: 0.9rem 1.2rem;
+  text-align: left;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--cream);
+  font-weight: 400;
+}
+
+.compare-table thead th:not(:first-child) { text-align: center; }
+
+.compare-table tbody tr {
+  border-bottom: 1px solid var(--cream-2);
+  transition: background 0.15s;
+}
+
+.compare-table tbody tr:hover { background: var(--cream); }
+.compare-table tbody tr:last-child { border-bottom: none; }
+
+.compare-table tbody td {
+  padding: 1rem 1.2rem;
+  color: var(--text);
+}
+
+.compare-table tbody td:not(:first-child) { text-align: center; }
+
+.compare-table .metric-name {
+  font-weight: 500;
+  color: var(--navy);
+}
+
+.compare-table .metric-desc {
+  font-size: 0.72rem;
+  color: var(--gray);
+  margin-top: 0.15rem;
+}
+
+.compare-table .val-esg {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--navy-2);
+}
+
+.compare-table .val-nonesg {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--gold);
+}
+
+.compare-table .winner {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  padding: 0.2rem 0.6rem;
+  text-transform: uppercase;
+}
+
+.winner-esg { background: var(--navy); color: var(--cream); }
+.winner-nonesg { background: #f5e6c0; color: #7a5c10; }
+.winner-tie { background: var(--cream-3); color: var(--gray); }
+
+/* ── FINDING CARDS ── */
+.findings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.finding-card {
+  background: var(--white);
+  border: 1px solid var(--cream-3);
+  border-top: 3px solid var(--navy);
+  padding: 1.6rem;
+  transition: box-shadow 0.2s;
+}
+
+.finding-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+
+.finding-number {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.5rem;
+}
+
+.finding-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 0.6rem;
+  line-height: 1.3;
+}
+
+.finding-body {
+  font-size: 0.83rem;
+  line-height: 1.65;
+  color: #444;
+}
+
+.finding-body strong { color: var(--navy); }
+
+.finding-stat {
+  margin-top: 0.8rem;
+  padding: 0.6rem 0.9rem;
+  background: var(--cream);
+  border-left: 3px solid var(--gold);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--navy);
+}
+
+/* ── PERFORMERS TABLE ── */
+.performers-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 700px) { .performers-grid { grid-template-columns: 1fr; } }
+
+.performer-block {
+  background: var(--white);
+  border: 1px solid var(--cream-3);
+}
+
+.performer-header {
+  padding: 0.9rem 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--cream-2);
+}
+
+.performer-header-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.ph-esg { color: var(--navy); }
+.ph-nonesg { color: #7a5c10; }
+
+.performer-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.5rem;
+  padding: 0.7rem 1.2rem;
+  border-bottom: 1px solid var(--cream);
+  align-items: center;
+  transition: background 0.15s;
+}
+
+.performer-row:hover { background: var(--cream); }
+.performer-row:last-child { border-bottom: none; }
+
+.perf-ticker {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--navy);
+  font-weight: 500;
+}
+
+.perf-return {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-align: right;
+}
+
+.perf-return.pos { color: var(--green); }
+.perf-return.neg { color: var(--red); }
+
+.perf-sharpe {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--gray);
+  text-align: right;
+  min-width: 60px;
+}
+
+/* ── CHART EMBED ── */
+.chart-container {
+  background: var(--white);
+  border: 1px solid var(--cream-3);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.chart-caption {
+  font-size: 0.75rem;
+  color: var(--gray);
+  margin-top: 1rem;
+  font-style: italic;
+  border-top: 1px solid var(--cream-2);
+  padding-top: 0.6rem;
+}
+
+.chart-placeholder {
+  background: var(--cream);
+  border: 2px dashed var(--cream-3);
+  padding: 3rem 2rem;
+  text-align: center;
+  color: var(--gray);
+}
+
+.chart-placeholder .chart-icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
+.chart-placeholder p { font-size: 0.82rem; line-height: 1.6; }
+.chart-placeholder code {
+  background: var(--cream-3);
+  padding: 0.1rem 0.4rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.78rem;
+  border-radius: 2px;
+}
+
+/* ── METHODOLOGY ── */
+.method-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.method-card {
+  background: var(--white);
+  border: 1px solid var(--cream-3);
+  padding: 1.3rem 1.5rem;
+}
+
+.method-step {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.4rem;
+}
+
+.method-title {
+  font-weight: 500;
+  color: var(--navy);
+  font-size: 0.88rem;
+  margin-bottom: 0.4rem;
+}
+
+.method-body {
+  font-size: 0.78rem;
+  color: var(--gray);
+  line-height: 1.55;
+}
+
+/* ── LIMITATIONS ── */
+.limitations {
+  background: var(--cream-2);
+  border: 1px solid var(--cream-3);
+  border-left: 4px solid var(--gold);
+  padding: 1.8rem 2rem;
+  margin-bottom: 2rem;
+}
+
+.limitations-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1rem;
+}
+
+.limitations ul {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.6rem 2rem;
+}
+
+.limitations li {
+  font-size: 0.82rem;
+  color: #444;
+  line-height: 1.5;
+  padding-left: 1.2rem;
+  position: relative;
+}
+
+.limitations li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--gold);
+  font-size: 0.75rem;
+}
+
+/* ── FOOTER ── */
+.footer {
+  background: var(--navy);
+  padding: 2rem 2.5rem;
+  margin-top: 4rem;
+}
+
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer-left .name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  color: var(--white);
+  font-weight: 600;
+}
+
+.footer-left .role {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.4);
+  margin-top: 0.2rem;
+  font-family: 'DM Mono', monospace;
+}
+
+.footer-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.footer-link {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.footer-link:hover { color: var(--white); }
+
+.footer-disclaimer {
+  width: 100%;
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.25);
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  line-height: 1.5;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate { opacity: 0; animation: fadeUp 0.6s ease forwards; }
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+.delay-5 { animation-delay: 0.5s; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .masthead-inner { grid-template-columns: 1fr; }
+  .masthead-meta { text-align: left; }
+  .main { padding: 2rem 1.5rem 4rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- MASTHEAD -->
+<header class="masthead">
+  <div class="masthead-inner">
+    <div>
+      <div class="masthead-kicker">Independent Research · Indian Equity Markets</div>
+      <h1>Does <em>ESG Investing</em><br>Pay Off in India?</h1>
+      <p class="masthead-sub">
+        A quantitative analysis of ESG vs Non-ESG stock performance<br>
+        across 120 NSE-listed companies · January 2022 – January 2025
+      </p>
+    </div>
+    <div class="masthead-meta">
+      <div class="author">Krithika Das</div>
+      <div class="role">B.Com (Hons) · Applied Finance & Analytics<br>CHRIST University, Bangalore</div>
+      <div class="date">February 2026</div>
+    </div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav-strip">
+  <div class="nav-strip-inner">
+    <a href="#verdict" class="nav-link">Verdict</a>
+    <a href="#numbers" class="nav-link">The Numbers</a>
+    <a href="#findings" class="nav-link">Key Findings</a>
+    <a href="#performers" class="nav-link">Top Performers</a>
+    <a href="#charts" class="nav-link">Charts</a>
+    <a href="#methodology" class="nav-link">Methodology</a>
+    <a href="#limitations" class="nav-link">Limitations</a>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- VERDICT -->
+  <div id="verdict" style="padding-top: 0.5rem;">
+    <div class="verdict animate">
+      <div class="verdict-label">Research Verdict</div>
+      <div class="verdict-text">
+        Non-ESG stocks outperformed ESG stocks by <strong>3.5% annually</strong> (16.3% vs 12.8%) 
+        over the study period — but ESG stocks were <strong>significantly less volatile</strong> 
+        (25.3% vs 32.3%). On a risk-adjusted basis, <strong>Sharpe ratios were nearly identical</strong> 
+        (0.252 vs 0.296), and the return gap is <strong>not statistically significant</strong> (p = 0.198). 
+        ESG investing in India does not hurt returns — it trades raw upside for a smoother, 
+        more consistent ride.
+      </div>
+    </div>
+  </div>
+
+  <!-- STAT CARDS -->
+  <div id="numbers">
+    <div class="section-marker animate delay-1">
+      <div class="section-number">01</div>
+      <div class="section-title">The Numbers at a Glance</div>
+      <div class="section-rule"></div>
+    </div>
+
+    <div class="stat-grid animate delay-2">
+      <div class="stat-card">
+        <div class="stat-badge badge-nonesg">Non-ESG Wins</div>
+        <div class="stat-label">Avg Annual Return</div>
+        <div class="stat-value">12.8%</div>
+        <div class="stat-sub">ESG · vs 16.3% Non-ESG<br><strong style="color:#7a5c10">Gap: −3.5%</strong></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-badge badge-esg">ESG Wins</div>
+        <div class="stat-label">Avg Volatility</div>
+        <div class="stat-value">25.3%</div>
+        <div class="stat-sub">ESG · vs 32.3% Non-ESG<br><strong style="color:#14532d">7% lower risk</strong></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-badge badge-tie">Near Tie</div>
+        <div class="stat-label">Sharpe Ratio</div>
+        <div class="stat-value">0.252</div>
+        <div class="stat-sub">ESG · vs 0.296 Non-ESG<br><strong style="color:#555">Δ only 0.044</strong></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-badge badge-esg">ESG Wins</div>
+        <div class="stat-label">Win Rate</div>
+        <div class="stat-value">83.3%</div>
+        <div class="stat-sub">ESG stocks positive · vs 78.3%<br><strong style="color:#14532d">More consistent</strong></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-badge badge-both">Inconclusive</div>
+        <div class="stat-label">P-Value (T-Test)</div>
+        <div class="stat-value neutral">0.198</div>
+        <div class="stat-sub">Not significant at p&lt;0.05<br><strong style="color:#555">Gap may be random</strong></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-badge badge-both">Sample</div>
+        <div class="stat-label">Universe</div>
+        <div class="stat-value neutral">120</div>
+        <div class="stat-sub">NSE-listed companies<br>60 ESG · 60 Non-ESG</div>
+      </div>
+    </div>
+
+    <!-- Comparison Table -->
+    <table class="compare-table animate delay-3">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>ESG Group</th>
+          <th>Non-ESG Group</th>
+          <th>Difference</th>
+          <th>Winner</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="metric-name">Annual Return</div>
+            <div class="metric-desc">Annualised price return over 3 years</div>
+          </td>
+          <td><span class="val-esg">12.79%</span></td>
+          <td><span class="val-nonesg">16.29%</span></td>
+          <td>−3.50%</td>
+          <td><span class="winner winner-nonesg">Non-ESG</span></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="metric-name">Cumulative Return</div>
+            <div class="metric-desc">Total return Jan 2022 – Jan 2025</div>
+          </td>
+          <td><span class="val-esg">70.80%</span></td>
+          <td><span class="val-nonesg">109.34%</span></td>
+          <td>−38.54%</td>
+          <td><span class="winner winner-nonesg">Non-ESG</span></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="metric-name">Volatility</div>
+            <div class="metric-desc">Annualised std dev of daily returns</div>
+          </td>
+          <td><span class="val-esg">25.25%</span></td>
+          <td><span class="val-nonesg">32.29%</span></td>
+          <td>−7.04%</td>
+          <td><span class="winner winner-esg">ESG</span></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="metric-name">Sharpe Ratio</div>
+            <div class="metric-desc">Return per unit of risk (Rf = 6.5%)</div>
+          </td>
+          <td><span class="val-esg">0.252</span></td>
+          <td><span class="val-nonesg">0.296</span></td>
+          <td>−0.044</td>
+          <td><span class="winner winner-tie">Near Tie</span></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="metric-name">Win Rate</div>
+            <div class="metric-desc">% of stocks with positive annual return</div>
+          </td>
+          <td><span class="val-esg">83.3%</span></td>
+          <td><span class="val-nonesg">78.3%</span></td>
+          <td>+5.0%</td>
+          <td><span class="winner winner-esg">ESG</span></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="metric-name">Statistical Significance</div>
+            <div class="metric-desc">T-test p-value on annual returns</div>
+          </td>
+          <td colspan="2" style="text-align:center; font-family:'DM Mono',monospace; font-size:0.85rem;">p = 0.198</td>
+          <td colspan="2"><span class="winner winner-tie">Not Significant</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- KEY FINDINGS -->
+  <div id="findings">
+    <div class="section-marker animate">
+      <div class="section-number">02</div>
+      <div class="section-title">Key Findings</div>
+      <div class="section-rule"></div>
+    </div>
+
+    <div class="findings-grid">
+      <div class="finding-card animate delay-1">
+        <div class="finding-number">Finding 01</div>
+        <div class="finding-title">Non-ESG stocks delivered higher raw returns — but at a cost</div>
+        <div class="finding-body">
+          Non-ESG stocks outperformed by 3.5% annually (16.3% vs 12.8%). The Non-ESG universe 
+          was dominated by high-performing <strong>PSU stocks</strong> — BEL (+56.5%), REC (+47.4%), 
+          PFC (+46.7%), Canara Bank (+44.1%) — which ran hard on government capex tailwinds. 
+          These are high-beta, policy-driven plays that don't screen well on ESG criteria but 
+          delivered outsized returns in this specific cycle.
+        </div>
+        <div class="finding-stat">Non-ESG top performer: BEL at +56.5% annualised</div>
+      </div>
+
+      <div class="finding-card animate delay-2">
+        <div class="finding-number">Finding 02</div>
+        <div class="finding-title">ESG stocks were dramatically less volatile</div>
+        <div class="finding-body">
+          The 7% volatility gap (25.3% vs 32.3%) is the most practically significant finding. 
+          For an investor who needs to sleep at night — or a fund with drawdown limits — 
+          ESG stocks offered a <strong>meaningfully smoother ride</strong>. The return distribution 
+          box plot shows ESG returns tightly clustered around the median, while Non-ESG had 
+          far more extreme outliers on both sides.
+        </div>
+        <div class="finding-stat">ESG volatility 21.8% lower than Non-ESG on relative basis</div>
+      </div>
+
+      <div class="finding-card animate delay-3">
+        <div class="finding-number">Finding 03</div>
+        <div class="finding-title">Risk-adjusted returns were essentially equal</div>
+        <div class="finding-body">
+          The Sharpe ratio gap of 0.044 (0.252 vs 0.296) is economically negligible. 
+          This is the most honest summary of the data: <strong>once you account for the extra 
+          risk Non-ESG investors took on, both groups performed almost identically.</strong> 
+          You were not rewarded for taking on the additional volatility of Non-ESG stocks 
+          on a per-unit-of-risk basis.
+        </div>
+        <div class="finding-stat">Sharpe gap: 0.044 — within normal statistical noise</div>
+      </div>
+
+      <div class="finding-card animate delay-4">
+        <div class="finding-number">Finding 04</div>
+        <div class="finding-title">The return gap is statistically inconclusive</div>
+        <div class="finding-body">
+          A p-value of 0.198 means there is a <strong>19.8% probability the observed gap 
+          is purely random</strong>. Academic convention requires p &lt; 0.05 to declare a 
+          finding significant. We cannot conclude that ESG stocks genuinely underperform — 
+          the sample size (60 per group) and 3-year window are simply not large enough to 
+          make a definitive claim either way.
+        </div>
+        <div class="finding-stat">p = 0.198 · Cannot reject null hypothesis at 95% confidence</div>
+      </div>
+
+      <div class="finding-card animate delay-5">
+        <div class="finding-number">Finding 05</div>
+        <div class="finding-title">ESG stocks had a higher "win rate"</div>
+        <div class="finding-body">
+          83.3% of ESG stocks delivered positive returns vs 78.3% of Non-ESG. 
+          ESG investing in India appears to <strong>reduce the probability of picking a 
+          loser</strong>, even if it reduces the magnitude of the biggest winners. 
+          For a conservative investor building a long-term portfolio, 
+          this consistency matters more than chasing the top performers.
+        </div>
+        <div class="finding-stat">5% more ESG stocks delivered positive returns</div>
+      </div>
+
+      <div class="finding-card animate">
+        <div class="finding-number">Finding 06</div>
+        <div class="finding-title">ESG losers were concentrated in FMCG & IT</div>
+        <div class="finding-body">
+          The bottom ESG performers — Wipro (−6.2%), Asian Paints (−4.3%), LTIM (−4.1%), 
+          Dabur (−2.5%) — are predominantly <strong>quality FMCG and IT names</strong> that 
+          de-rated as rate hikes compressed multiples globally. These are not ESG failures — 
+          they're valuation mean-reversions in richly priced sectors that happened to dominate 
+          the ESG index.
+        </div>
+        <div class="finding-stat">Bottom ESG performers: Wipro, Asian Paints, LTIM, Dabur</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOP PERFORMERS -->
+  <div id="performers">
+    <div class="section-marker animate">
+      <div class="section-number">03</div>
+      <div class="section-title">Stock-Level Performance</div>
+      <div class="section-rule"></div>
+    </div>
+
+    <div class="performers-grid animate delay-1">
+      <div class="performer-block">
+        <div class="performer-header">
+          <span class="performer-header-label ph-esg">▲ Top 5 ESG Performers</span>
+          <span class="winner winner-esg" style="font-size:0.55rem">ESG Group</span>
+        </div>
+        <div class="performer-row">
+          <div class="perf-ticker">COALINDIA.NS</div>
+          <div class="perf-return pos">+37.2%</div>
+          <div class="perf-sharpe">Sharpe 1.08</div>
+        </div>
+        <div class="performer-row">
+          <div class="perf-ticker">BAJAJ-AUTO.NS</div>
+          <div class="perf-return pos">+33.2%</div>
+          <div class="perf-sharpe">Sharpe 1.10</div>
+        </div>
+        <div class="performer-row">
+          <div class="perf-ticker">BHARTIARTL.NS</div>
+          <div class="perf-return pos">+32.9%</div>
+          <div class="perf-sharpe">Sharpe 1.24</div>
+        </div>
+        <div class="performer-row">
+          <div class="perf-ticker">NTPC.NS</div>
+          <div class="perf-return pos">+31.9%</div>
+          <div class="perf-sharpe">Sharpe 1.01</div>
+        </div>
+        <div class="performer-row">
+          <div class="perf-ticker">EICHERMOT.NS</div>
+          <div class="perf-return pos">+29.4%</div>
+          <div class="perf-sharpe">Sharpe 0.90</div>
+        </div>
+      </div>
+
+      <div class="performer-block">
+        <div class="performer-header">
+          <span class="performer-header-label ph-nonesg">▲ Top 5 Non-ESG Performers</span>
+          <span class="winner winner-nonesg" style="font-size:0.55rem">Non-ESG Group</span>
+        </div>
+        <div class="performer-row">
+          <div class="perf-ticker">BEL.NS</div>
+          <div class="perf-return pos">+56.5%</div>
+          <div class="perf-sharpe">Sharpe 1.46</div>
+        </div>
+        <div class="performer-row">
+          <div class="perf-ticker">CUMMINSIND.NS</div>
+          <div class="perf-return pos">+49.5%</div>
+          <div class="perf-sharpe">Sharpe 1.34</div>
+        </div>
+        <div class="performer-row">
+          <div class="perf-ticker">RECLTD.NS</div>
+          <div class="perf-return pos">+47.4%</div>
+          <div class="perf-sharpe">Sharpe 1.01</div>
+        </div>
+        <div class="performer-row">
+          <div class="perf-ticker">PFC.NS</div>
+          <div class="perf-return pos">+46.7%</div>
+          <div class="perf-sharpe">Sharpe 1.01</div>
+        </div>
+        <div class="performer-row">
+          <div class="perf-ticker">CANBK.NS</div>
+          <div class="perf-return pos">+44.1%</div>
+          <div class="perf-sharpe">Sharpe 1.17</div>
+        </div>
+      </div>
+
+      <div class="performer-block">
+        <div class="performer-header">
+          <span class="performer-header-label ph-esg">▼ Bottom 5 ESG Performers</span>
+          <span class="winner winner-tie" style="font-size:0.55rem">ESG Group</span>
+        </div>
+        <div class="performer-row">
+          <div class="perf-ticker">WIPRO.NS</div>
+          <div class="perf-return neg">−6.2%</div>
+          <div class="perf-sharpe">Sharpe −0.50</div>
+        </div>
+        <div class="performer-row">
+          <div class="perf-ticker">ASIANPAINT.NS</div>
+          <div class="perf-return neg">−4.3%</div>
+          <div class="perf-sharpe">Sharpe −0.50</div>
+        </div>
+        <div class="performer-row">
+          <div class="perf-ticker">LTIM.NS</div>
+          <div class="perf-return neg">−4.1%</div>
+          <div class="perf-sharpe">Sharpe −0.36</div>
+        </div>
+        <div class="performer-row">
+          <div class="perf-ticker">DABUR.NS</div>
+          <div class="perf-return neg">−2.5%</div>
+          <div class="perf-sharpe">Sharpe −0.42</div>
+        </div>
+        <div class="performer-row">
+          <div class="perf-ticker">PAGEIND.NS</div>
+          <div class="perf-return neg">−2.0%</div>
+          <div class="perf-sharpe">Sharpe −0.35</div>
+        </div>
+      </div>
+
+      <div class="performer-block">
+        <div class="performer-header">
+          <span class="performer-header-label" style="color:#555">Notable Observation</span>
+        </div>
+        <div style="padding: 1.2rem; font-size: 0.82rem; line-height: 1.65; color: #444;">
+          <strong style="color:var(--navy)">PSU dominance in Non-ESG:</strong> 4 of the top 5 
+          Non-ESG performers are PSU companies (BEL, REC, PFC, Canara Bank) that benefited 
+          from India's government capex supercycle and defence spending. These stocks are 
+          excluded from ESG indices due to governance concerns — which explains much of 
+          the raw return gap. This is a <em>cycle-specific phenomenon</em>, not a structural 
+          ESG underperformance.
+          <br><br>
+          <strong style="color:var(--navy)">ESG losers are valuation stories:</strong> 
+          Wipro, Asian Paints, and Dabur de-rated on stretched valuations — not ESG-specific 
+          issues. They would have underperformed in any non-ESG index too.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div id="charts">
+    <div class="section-marker animate">
+      <div class="section-number">04</div>
+      <div class="section-title">Visual Analysis</div>
+      <div class="section-rule"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+
+    <style>
+      .charts-legend {
+        display: flex;
+        gap: 1.8rem;
+        margin-bottom: 1.4rem;
+        font-family: 'DM Mono', monospace;
+        font-size: 0.62rem;
+        letter-spacing: 0.1em;
+        color: var(--gray);
+        align-items: center;
+      }
+      .charts-legend-dot {
+        display: inline-block;
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        margin-right: 6px;
+        vertical-align: middle;
+      }
+      .charts-row-label {
+        font-family: 'DM Mono', monospace;
+        font-size: 0.58rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--gray-2);
+        margin-bottom: 0.7rem;
+        margin-top: 1.6rem;
+        padding-left: 2px;
+      }
+      .charts-row-label:first-of-type { margin-top: 0; }
+      .charts-row {
+        display: grid;
+        gap: 1rem;
+        margin-bottom: 0;
+      }
+      .charts-row-3 { grid-template-columns: repeat(3, 1fr); }
+      .charts-row-2 { grid-template-columns: repeat(2, 1fr); }
+      .charts-row-1 { grid-template-columns: 1fr; }
+      .pc-card {
+        background: var(--white);
+        border: 1px solid var(--cream-3);
+        border-top: 3px solid var(--navy);
+        overflow: hidden;
+        box-shadow: 0 1px 6px rgba(13,31,60,0.05);
+        transition: box-shadow 0.2s, transform 0.2s;
+      }
+      .pc-card:hover {
+        box-shadow: 0 4px 18px rgba(13,31,60,0.1);
+        transform: translateY(-1px);
+      }
+      .pc-card-header {
+        padding: 0.7rem 1rem 0.4rem;
+        border-bottom: 1px solid var(--cream-2);
+      }
+      .pc-card-title {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: var(--navy);
+        line-height: 1.3;
+      }
+      .pc-card-subtitle {
+        font-family: 'DM Mono', monospace;
+        font-size: 0.55rem;
+        color: var(--gray-2);
+        letter-spacing: 0.08em;
+        margin-top: 0.15rem;
+      }
+      .charts-caption {
+        font-size: 0.71rem;
+        color: var(--gray);
+        margin-top: 1.4rem;
+        line-height: 1.65;
+        font-style: italic;
+        border-top: 1px solid var(--cream-3);
+        padding-top: 0.9rem;
+      }
+      @media (max-width: 800px) {
+        .charts-row-3, .charts-row-2 { grid-template-columns: 1fr; }
+      }
+    </style>
+
+    <div class="animate delay-1">
+      <div class="charts-legend">
+        <span><span class="charts-legend-dot" style="background:#1a3260"></span>ESG Stocks (n=60)</span>
+        <span><span class="charts-legend-dot" style="background:#b8922a"></span>Non-ESG Stocks (n=60)</span>
+        <span style="margin-left:auto; font-size:0.55rem; opacity:0.7">Hover charts for exact values · Jan 2022 – Jan 2025</span>
+      </div>
+
+      <!-- Row A: Summary bar charts -->
+      <div class="charts-row-label">A — Summary Metrics</div>
+      <div class="charts-row charts-row-3">
+        <div class="pc-card">
+          <div class="pc-card-header">
+            <div class="pc-card-title">Avg Annual Return</div>
+            <div class="pc-card-subtitle">Mean annualised return across group</div>
+          </div>
+          <div id="pc-return"></div>
+        </div>
+        <div class="pc-card">
+          <div class="pc-card-header">
+            <div class="pc-card-title">Avg Volatility</div>
+            <div class="pc-card-subtitle">Annualised std dev of daily returns</div>
+          </div>
+          <div id="pc-vol"></div>
+        </div>
+        <div class="pc-card">
+          <div class="pc-card-header">
+            <div class="pc-card-title">Avg Sharpe Ratio</div>
+            <div class="pc-card-subtitle">Risk-adjusted return (rf = 6.5%)</div>
+          </div>
+          <div id="pc-sharpe"></div>
+        </div>
+      </div>
+
+      <!-- Row B: Distribution charts -->
+      <div class="charts-row-label">B — Distribution &amp; Win Rate</div>
+      <div class="charts-row charts-row-2">
+        <div class="pc-card">
+          <div class="pc-card-header">
+            <div class="pc-card-title">Return Distribution</div>
+            <div class="pc-card-subtitle">Box plot with mean marker — dotted line = zero return</div>
+          </div>
+          <div id="pc-box"></div>
+        </div>
+        <div class="pc-card">
+          <div class="pc-card-header">
+            <div class="pc-card-title">Win Rate</div>
+            <div class="pc-card-subtitle">% of stocks with positive annual return</div>
+          </div>
+          <div id="pc-winrate"></div>
+        </div>
+      </div>
+
+      <!-- Row C: Scatter -->
+      <div class="charts-row-label">C — Risk vs Return (Stock-Level)</div>
+      <div class="charts-row charts-row-1">
+        <div class="pc-card">
+          <div class="pc-card-header">
+            <div class="pc-card-title">Return vs Volatility — Each dot = 1 stock</div>
+            <div class="pc-card-subtitle">Ideal stocks sit top-left (high return, low risk)</div>
+          </div>
+          <div id="pc-scatter"></div>
+        </div>
+      </div>
+
+      <div class="charts-caption">
+        Fig 1. ESG vs Non-ESG Performance Dashboard — 6-panel interactive analysis covering annual returns,
+        volatility, Sharpe ratio, return distribution, risk-return scatter, and win rate.
+        Data: Yahoo Finance / NSE. Period: Jan 2022 – Jan 2025.
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    const NAVY = '#1a3260';
+    const GOLD = '#b8922a';
+    const RED  = '#7f1d1d';
+    const BG   = '#ffffff';
+    const GRID = '#ede7d9';
+
+    const esg = {"Annual_Return_%":[6.915079740272634,19.52959772346887,9.293873864939428,-4.2572392434509165,16.317515925190907,33.235587266202195,4.743517731365343,8.641450732176592,32.865953997596264,24.061314492303154,15.349036162153084,13.797355820110102,37.15373214418689,-2.4546823062350454,8.989335753004069,7.701592548542591,29.39851968292544,14.891812793764437,9.549223296028142,8.214487124382552,3.9348079772837385,27.957811866190884,17.540556214652337,1.284691331197707,15.996001969533925,9.428650646229153,4.298962284392105,-0.6028158997549715,-1.3296350562492898,22.165308462729904,16.2580038910914,4.9000507190877896,21.966279358690176,-4.118446135583065,22.870406995959037,23.15948019324876,27.417462323918727,8.02313037183524,31.933436695757344,20.804643071611274,-1.9869574221743291,5.163603198809241,20.241600026328953,9.463672688862479,-1.51525403580548,14.117184999487243,22.34211321058721,-0.16587120420351598,22.438810906949612,20.508451360216128,13.285753689292502,14.966568201468755,15.682806117278169,-1.8006976236636718,0.5957082236659916,12.92851926532894,25.640409386465212,11.765720407214086,2.006117982641986,-6.23270613796072],"Volatility_%":[50.38673167550273,37.51634185367323,24.610537004957198,21.566148035981698,23.698656063697708,24.335043637263613,26.212454045063637,27.42419105126149,21.193487372760632,28.311634878367038,20.524361970877983,22.707422153160692,28.334505040517094,21.227671130956445,27.271698840805588,20.925276587836276,25.41990055456931,23.092409099793564,23.702149808661158,20.460900522130256,25.245181203268512,25.8228257571674,32.01997275095154,20.189194238327186,19.092797844858666,24.09045759531619,26.44960707450749,33.48275595918798,24.790268858006947,18.25040688047382,27.617238210548127,22.20684717264441,23.792836350761597,29.15615078286111,27.04406775467172,22.302990064863682,28.806605466466568,18.8755550962513,25.313882314205483,30.714643493791545,24.628711580538113,20.761138882369142,25.569177647241233,21.866029828057535,24.988220143119218,22.934498621150954,23.99381064332527,24.514758705780913,29.444932087341275,19.54530522262622,23.106513823787925,30.56969559295527,30.4866121392262,20.66778051823947,26.466863651466895,22.85548200908686,23.232013633919166,22.68494164289917,27.503033341900498,25.2709499816696],"Sharpe":[0.008,0.347,0.114,-0.499,0.414,1.099,-0.067,0.078,1.244,0.62,0.431,0.321,1.082,-0.422,0.091,0.057,0.901,0.363,0.129,0.084,-0.102,0.831,0.345,-0.258,0.497,0.122,-0.083,-0.212,-0.316,0.858,0.353,-0.072,0.65,-0.364,0.605,0.747,0.726,0.081,1.005,0.466,-0.345,-0.064,0.537,0.136,-0.321,0.332,0.66,-0.272,0.541,0.717,0.294,0.277,0.301,-0.402,-0.223,0.281,0.824,0.232,-0.163,-0.504]};
+    const nonesg = {"Annual_Return_%":[24.304092349510277,-6.82629525162004,10.420479674583127,13.459771695999745,-12.307372545138861,41.271197273796645,56.50176377304905,-4.043906350447568,2.339816384391269,22.092568217766086,44.102760267800065,33.6896750286261,11.61918686631791,-2.83693432310147,49.48015907891601,15.700813937337244,22.950332851167655,7.2657333519927425,1.2983047024104577,0.8839722845813247,14.68486334647734,-2.869826009854426,41.915971753852446,15.504194292603302,-4.219866655226612,29.005617327336573,-6.302355100236767,11.155790120690279,13.221391643296943,9.390333123685114,18.877207832569166,-2.8456729095471034,20.34049795798851,4.742287078472263,30.36306909344024,17.690496594731297,23.50368520064139,11.321434004835385,46.697597169658934,1.8222818219361114,36.82685740542333,33.415542295206535,21.959530871458366,47.37069542040262,10.20170211437037,44.04705287504649,6.579483513053486,18.811679591271346,7.5911579226330295,-2.068785725314415,26.819209852535874,42.09206731962012,-15.104734792068397,1.4795683241503266,33.45676937422406,3.0151050863584272,-15.37128817916643,18.544526676004214],"Volatility_%":[31.82600583106196,50.687801874304206,29.502862843430027,27.35198981160555,38.34760983522024,31.45299707895615,34.366045021391,24.52108297685917,33.91815575186357,23.871346865838717,32.21040423096271,32.59050925140555,23.288890998820865,36.33044730293701,32.024575945756034,32.21106202494423,33.5345290730595,25.345980048436335,37.62958242372827,23.963227542522127,28.097007172603128,36.3769330415127,31.50947159645461,33.65111536789565,25.558574215858453,29.309597701893136,29.69390123411631,31.52126952038762,27.550197767687585,25.430874970153848,36.15838851359575,34.67991339973436,31.26676236284479,21.674429235698504,31.376518952886983,33.648081900819975,32.85542853874283,34.735034258196826,28.7627504006024,39.72427642587526,24.78307375743621,31.45181832651388,33.70698993589744,39.40658586708365,40.58549873660628,39.1870796067808,35.56019681999897,27.716380730160196,62.683165597179745,28.660002339447445,32.28861163431921,38.19766224722137,37.732097580920765,31.87671265083588,22.498351153591578,23.646731454559678,31.1761610649906,32.54195103365606,40.74308819892974,24.142390804633482],"Sharpe":[0.559,-0.263,0.133,0.254,-0.49,1.105,1.455,-0.43,-0.123,0.653,1.167,0.834,0.22,-0.257,1.342,0.286,0.491,0.03,-0.138,-0.234,0.291,-0.258,1.124,0.268,-0.419,0.768,-0.431,0.148,0.264,0.08,0.357,-0.299,0.639,-0.056,0.709,0.341,0.49,0.168,1.012,-0.189,0.964,0.799,0.392,1.007,0.094,1.056,0.003,0.196,0.038,-0.265,0.532,0.943,-0.678,-0.223,0.865,-0.107,-0.537,0.499]};
+
+    const avg = arr => arr.reduce((a,b) => a+b, 0) / arr.length;
+    const cfg = { responsive: true, displayModeBar: false };
+
+    const baseFont = { family: "'DM Sans', sans-serif", color: '#1a1a2e', size: 11 };
+    const BAR_H = 220;
+    const DIST_H = 300;
+    const SCATTER_H = 380;
+
+    const baseBar = {
+      paper_bgcolor: BG, plot_bgcolor: BG,
+      font: baseFont,
+      margin: { t: 36, r: 20, b: 44, l: 52 },
+      height: BAR_H,
+      bargap: 0.55,
+    };
+
+    function barChart(id, vals, ylabel, fmt, yrange) {
+      const layout = {
+        ...baseBar,
+        yaxis: {
+          title: { text: ylabel, font: { size: 10 }, standoff: 8 },
+          gridcolor: GRID, zeroline: true, zerolinecolor: '#ccc',
+          tickfont: { size: 9 },
+          automargin: true,
+          ...(yrange ? { range: yrange } : { rangemode: 'tozero' })
+        },
+        xaxis: { tickfont: { size: 12, color: NAVY }, fixedrange: true },
+      };
+      Plotly.newPlot(id, [{
+        type: 'bar',
+        x: ['ESG', 'Non-ESG'],
+        y: vals,
+        marker: {
+          color: [NAVY, GOLD],
+          line: { color: [NAVY, GOLD], width: 0 },
+          opacity: 0.9,
+        },
+        text: vals.map(v => fmt(v)),
+        textposition: 'inside',
+        insidetextanchor: 'end',
+        textfont: { size: 11, color: '#ffffff', family: "'DM Mono', monospace" },
+        hovertemplate: '<b>%{x}</b><br>' + ylabel + ': <b>%{text}</b><extra></extra>',
+        width: [0.38, 0.38],
+      }], layout, cfg);
+    }
+
+    const esgReturn = avg(esg['Annual_Return_%']);
+    const nesgReturn = avg(nonesg['Annual_Return_%']);
+    barChart('pc-return', [esgReturn, nesgReturn], 'Return (%)', v => v.toFixed(1)+'%');
+
+    const esgVol = avg(esg['Volatility_%']);
+    const nesgVol = avg(nonesg['Volatility_%']);
+    barChart('pc-vol', [esgVol, nesgVol], 'Volatility (%)', v => v.toFixed(1)+'%');
+
+    const esgSharpe = avg(esg['Sharpe']);
+    const nesgSharpe = avg(nonesg['Sharpe']);
+    barChart('pc-sharpe', [esgSharpe, nesgSharpe], 'Sharpe Ratio', v => v.toFixed(3));
+
+    // Box plot — uniform height with win rate
+    Plotly.newPlot('pc-box', [
+      {
+        type: 'box', name: 'ESG', y: esg['Annual_Return_%'],
+        marker: { color: NAVY, size: 3 },
+        fillcolor: NAVY + '30',
+        line: { color: NAVY, width: 1.5 },
+        boxmean: 'sd',
+        hovertemplate: '<b>ESG</b><br>%{y:.2f}%<extra></extra>',
+      },
+      {
+        type: 'box', name: 'Non-ESG', y: nonesg['Annual_Return_%'],
+        marker: { color: GOLD, size: 3 },
+        fillcolor: GOLD + '30',
+        line: { color: GOLD, width: 1.5 },
+        boxmean: 'sd',
+        hovertemplate: '<b>Non-ESG</b><br>%{y:.2f}%<extra></extra>',
+      }
+    ], {
+      paper_bgcolor: BG, plot_bgcolor: BG,
+      font: baseFont,
+      height: DIST_H,
+      margin: { t: 18, r: 20, b: 44, l: 56 },
+      showlegend: false,
+      yaxis: {
+        title: { text: 'Annual Return (%)', font: { size: 10 }, standoff: 8 },
+        gridcolor: GRID, zeroline: true, zerolinecolor: RED, zerolinewidth: 1.5,
+        tickfont: { size: 9 },
+      },
+      xaxis: { tickfont: { size: 12, color: NAVY }, fixedrange: true },
+      shapes: [{
+        type: 'line', x0: -0.5, x1: 1.5, y0: 0, y1: 0,
+        line: { color: RED, width: 1.5, dash: 'dot' }
+      }],
+    }, cfg);
+
+    // Win rate — same height as box plot
+    const esgWin = esg['Annual_Return_%'].filter(v => v > 0).length / esg['Annual_Return_%'].length * 100;
+    const nonesgWin = nonesg['Annual_Return_%'].filter(v => v > 0).length / nonesg['Annual_Return_%'].length * 100;
+    Plotly.newPlot('pc-winrate', [{
+      type: 'bar',
+      x: ['ESG', 'Non-ESG'],
+      y: [esgWin, nonesgWin],
+      marker: { color: [NAVY, GOLD], opacity: 0.9 },
+      text: [esgWin.toFixed(1)+'%', nonesgWin.toFixed(1)+'%'],
+      textposition: 'inside',
+      insidetextanchor: 'end',
+      textfont: { size: 11, color: '#ffffff', family: "'DM Mono', monospace" },
+      hovertemplate: '<b>%{x}</b><br>Win Rate: <b>%{text}</b><extra></extra>',
+      width: [0.38, 0.38],
+    }], {
+      paper_bgcolor: BG, plot_bgcolor: BG,
+      font: baseFont,
+      height: DIST_H,
+      margin: { t: 18, r: 20, b: 44, l: 52 },
+      yaxis: {
+        title: { text: 'Win Rate (%)', font: { size: 10 }, standoff: 8 },
+        range: [0, 108], gridcolor: GRID,
+        tickfont: { size: 9 },
+      },
+      xaxis: { tickfont: { size: 12, color: NAVY }, fixedrange: true },
+    }, cfg);
+
+    // Scatter — full width
+    Plotly.newPlot('pc-scatter', [
+      {
+        type: 'scatter', mode: 'markers', name: 'ESG',
+        x: esg['Volatility_%'], y: esg['Annual_Return_%'],
+        marker: { color: NAVY, size: 8, opacity: 0.75, line: { color: '#fff', width: 1 } },
+        hovertemplate: '<b>ESG Stock</b><br>Volatility: %{x:.1f}%<br>Return: %{y:.1f}%<extra></extra>',
+      },
+      {
+        type: 'scatter', mode: 'markers', name: 'Non-ESG',
+        x: nonesg['Volatility_%'], y: nonesg['Annual_Return_%'],
+        marker: { color: GOLD, size: 8, opacity: 0.8, line: { color: '#fff', width: 1 } },
+        hovertemplate: '<b>Non-ESG Stock</b><br>Volatility: %{x:.1f}%<br>Return: %{y:.1f}%<extra></extra>',
+      }
+    ], {
+      paper_bgcolor: BG, plot_bgcolor: BG,
+      font: baseFont,
+      height: SCATTER_H,
+      margin: { t: 18, r: 28, b: 52, l: 60 },
+      xaxis: {
+        title: { text: 'Volatility (%)', font: { size: 10 }, standoff: 8 },
+        gridcolor: GRID, zeroline: false, tickfont: { size: 9 },
+      },
+      yaxis: {
+        title: { text: 'Annual Return (%)', font: { size: 10 }, standoff: 8 },
+        gridcolor: GRID, zeroline: true, zerolinecolor: '#ccc', tickfont: { size: 9 },
+      },
+      legend: {
+        x: 0.01, y: 0.99, bgcolor: 'rgba(255,255,255,0.92)',
+        bordercolor: GRID, borderwidth: 1,
+        font: { size: 11 },
+      },
+      shapes: [{
+        type: 'line', x0: 15, x1: 68, y0: 0, y1: 0,
+        line: { color: '#ccc', width: 1, dash: 'dash' }
+      }],
+    }, cfg);
+  })();
+  </script>
+
+  <!-- METHODOLOGY -->
+  <div id="methodology" style="margin-top: 3rem;">
+    <div class="section-marker animate">
+      <div class="section-number">05</div>
+      <div class="section-title">Methodology</div>
+      <div class="section-rule"></div>
+    </div>
+
+    <div class="method-grid animate delay-1">
+      <div class="method-card">
+        <div class="method-step">Step 01</div>
+        <div class="method-title">Universe Construction</div>
+        <div class="method-body">
+          ESG group: 64 Nifty100 ESG Index constituents. 
+          Benchmark: additional 64 Nifty100 non-ESG companies. 
+          After removing delisted/unavailable tickers: 60 ESG + 60 Non-ESG = 120 total.
+        </div>
+      </div>
+      <div class="method-card">
+        <div class="method-step">Step 02</div>
+        <div class="method-title">Data Collection</div>
+        <div class="method-body">
+          3 years of daily adjusted closing prices pulled via 
+          yfinance (Yahoo Finance API). Period: Jan 2022 – Jan 2025. 
+          Auto-adjusted for splits and dividends.
+        </div>
+      </div>
+      <div class="method-card">
+        <div class="method-step">Step 03</div>
+        <div class="method-title">Return Computation</div>
+        <div class="method-body">
+          Annualised return computed as (1 + cumulative return)^(1/years) − 1. 
+          Volatility = annualised std dev of daily returns × √252. 
+          Sharpe = (Annual Return − 6.5%) / Volatility.
+        </div>
+      </div>
+      <div class="method-card">
+        <div class="method-step">Step 04</div>
+        <div class="method-title">Statistical Testing</div>
+        <div class="method-body">
+          Independent samples T-test (scipy.stats) on annual returns 
+          to assess whether the ESG/Non-ESG return gap is statistically 
+          significant. Significance threshold: p &lt; 0.05.
+        </div>
+      </div>
+      <div class="method-card">
+        <div class="method-step">Step 05</div>
+        <div class="method-title">Tools Used</div>
+        <div class="method-body">
+          Python 3 · pandas · matplotlib · seaborn · scipy · yfinance. 
+          Built in Google Colab. All code available on GitHub.
+        </div>
+      </div>
+      <div class="method-card">
+        <div class="method-step">Step 06</div>
+        <div class="method-title">Risk-Free Rate</div>
+        <div class="method-body">
+          6.5% used as the Indian risk-free rate — approximate yield 
+          on 10-year Government of India bonds as of the study period. 
+          Used for Sharpe ratio computation only.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIMITATIONS -->
+  <div id="limitations">
+    <div class="section-marker animate">
+      <div class="section-number">06</div>
+      <div class="section-title">Limitations & Caveats</div>
+      <div class="section-rule"></div>
+    </div>
+
+    <div class="limitations animate delay-1">
+      <div class="limitations-title">Honest Acknowledgements</div>
+      <ul>
+        <li>Sample size of 60 per group limits statistical power — a larger dataset would strengthen conclusions</li>
+        <li>3-year window (2022–2025) captures a specific market cycle dominated by PSU stocks — results may not generalise</li>
+        <li>Survivorship bias: delisted companies excluded from data, which may inflate returns for both groups</li>
+        <li>ESG scores sourced from NSE index composition, not individual Bloomberg/MSCI ESG ratings — a cruder proxy</li>
+        <li>Equal weighting used — a market-cap weighted approach may yield different results</li>
+        <li>Does not account for sector composition differences between ESG and Non-ESG groups</li>
+        <li>Price returns only — dividend yields not separately analysed (could favour PSU/Non-ESG stocks)</li>
+        <li>p = 0.198 means we cannot definitively conclude ESG underperforms — results are directional, not conclusive</li>
+      </ul>
+    </div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-left">
+      <div class="name">Krithika Das</div>
+      <div class="role">B.Com (Hons) · Applied Finance & Analytics · CHRIST University · CFA Level I Candidate</div>
+    </div>
+    <div class="footer-links">
+      <a href="https://linkedin.com/in/krithika-das-009b78275" class="footer-link">LinkedIn</a>
+      <a href="https://github.com/kd34217" class="footer-link">GitHub</a>
+      <a href="/cdn-cgi/l/email-protection#29425b405d41404248074d485a191c694e44484045074a4644" class="footer-link">Email</a>
+    </div>
+    <div class="footer-disclaimer">
+      This research is prepared for academic and portfolio learning purposes only. It does not constitute investment advice. 
+      All data sourced from Yahoo Finance and NSE public data. The author is a third-year undergraduate student. 
+      Past performance is not indicative of future results.
+    </div>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // Intersection observer for scroll animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.animate').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(el);
+  });
+
+  // Active nav highlighting
+  const sections = document.querySelectorAll('[id]');
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(section => {
+      if (window.scrollY >= section.offsetTop - 100) {
+        current = section.id;
+      }
+    });
+    navLinks.forEach(link => {
+      link.style.color = link.getAttribute('href') === '#' + current
+        ? 'var(--navy)' : 
